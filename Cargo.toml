@@ -1,0 +1,40 @@
+[package]
+name = "solana-keygen"
+description = "Solana key generation utility"
+documentation = "https://docs.rs/solana-keygen"
+version = "3.0.1"
+authors = ["Solana Maintainers <maintainers@solana.foundation>"]
+repository = "https://github.com/solana-labs/solana"
+homepage = "https://solana.com/"
+license = "Apache-2.0"
+edition = "2021"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[[bin]]
+name = "solana-keygen"
+path = "src/keygen.rs"
+
+[dependencies]
+bs58 = { version = "0.5.0", features = ["std"] }
+clap = { version = "3.1.5", features = ["cargo"] }
+dirs-next = "2.0.0"
+num_cpus = "1.13.1"
+serde_json = "1.0.108"
+solana-clap-v3-utils = "3.0.1"
+solana-cli-config = "3.0.1"
+solana-derivation-path = "=3.0.0"
+solana-instruction = { version = "=3.0.0", features = ["bincode"] }
+solana-keypair = "=3.0.1"
+solana-message = { version = "=3.0.1", features = ["bincode"] }
+solana-pubkey = { version = "=3.0.0", default-features = false }
+solana-remote-wallet = { version = "3.0.1", features = ["default"] }
+solana-seed-derivable = "=3.0.0"
+solana-signer = "=3.0.0"
+solana-version = "3.0.1"
+tiny-bip39 = "0.8.2"
+
+[dev-dependencies]
+solana-pubkey = { version = "3.0.0", features = ["rand"] }
+tempfile = "3.10.1"

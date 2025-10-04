@@ -2,14 +2,29 @@
 set -euo pipefail
 
 # --- Config ---
-PATTERN="${PATTERN:-audio:1}"             # Override with env var, e.g., PATTERN="A:2"
+PATTERN="${PATTERN:-aa:1}"             # Override with env var, e.g., PATTERN="A:2"
 NUM_THREADS="${NUM_THREADS:-0}"       # 0 = use CLI default (all cores)
 SLEEP_BETWEEN_LOOPS="${SLEEP_BETWEEN_LOOPS:-0}"   # seconds to pause between loops
 NO_BIP39="${NO_BIP39:---no-bip39-passphrase}"     # keep default; remove if you want a passphrase
 DATABASE_URL="${DATABASE_URL:-}"
 
+# Locate repo directory and local keygen binary
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -x "${SCRIPT_DIR}/target/release/solana-keygen" ]; then
+  LOCAL_KEYGEN_BIN="${SCRIPT_DIR}/target/release/solana-keygen"
+elif [ -x "${SCRIPT_DIR}/target/debug/solana-keygen" ]; then
+  LOCAL_KEYGEN_BIN="${SCRIPT_DIR}/target/debug/solana-keygen"
+else
+  if command -v cargo >/dev/null 2>&1; then
+    (cd "${SCRIPT_DIR}" && cargo build --release >/dev/null 2>&1)
+    LOCAL_KEYGEN_BIN="${SCRIPT_DIR}/target/release/solana-keygen"
+  else
+    echo "Local solana-keygen not found and cargo is not installed to build it."
+    exit 1
+  fi
+fi
+
 # Sanity checks
-command -v solana-keygen >/dev/null 2>&1 || { echo "solana-keygen not found in PATH"; exit 1; }
 command -v psql >/dev/null 2>&1 || { echo "psql not found in PATH"; exit 1; }
 command -v python3 >/dev/null 2>&1 || { echo "python3 not found in PATH"; exit 1; }
 
@@ -25,7 +40,7 @@ while :; do
     # grind does not accept an explicit outfile; it writes keypair(s) into CWD.
   logf="${tmpdir}/grind.log"
     # Build command, omitting --num-threads when set to 0 so the CLI uses its default
-    cmd=(solana-keygen grind --ends-with "${PATTERN}" ${NO_BIP39})
+    cmd=("${LOCAL_KEYGEN_BIN}" grind --ends-with "${PATTERN}" ${NO_BIP39})
     if [ "${NUM_THREADS}" != "0" ] && [ -n "${NUM_THREADS}" ]; then
       cmd+=(--num-threads "${NUM_THREADS}")
     fi
@@ -53,7 +68,7 @@ while :; do
     any_fail=0
     for outfile in "${json_files[@]}"; do
       # Derive the public key from the written keypair file (most robust way)
-      if ! pubkey="$(solana-keygen pubkey "${outfile}")"; then
+      if ! pubkey="$("${LOCAL_KEYGEN_BIN}" pubkey "${outfile}")"; then
         echo "Failed to derive public key from ${outfile}"
         any_fail=1
         continue
