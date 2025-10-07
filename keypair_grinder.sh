@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # --- Config ---
-PATTERN="${PATTERN:-audio:1}"             # Override with env var, e.g., PATTERN="A:2"
+PATTERN="${PATTERN:-Xmp3:1}"             # Override with env var, e.g., PATTERN="A:2"
 NUM_THREADS="${NUM_THREADS:-0}"       # 0 = use CLI default (all cores)
 SLEEP_BETWEEN_LOOPS="${SLEEP_BETWEEN_LOOPS:-0}"   # seconds to pause between loops
 NO_BIP39="${NO_BIP39:---no-bip39-passphrase}"     # keep default; remove if you want a passphrase
